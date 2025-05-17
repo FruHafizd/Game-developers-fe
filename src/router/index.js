@@ -1,4 +1,6 @@
 import { createRouter,createWebHistory } from "vue-router";
+import Forbidden from '../components/ForbiddenPage.vue'
+import NotFound from '../components/NotFoundPage.vue'
 import LoginPage from '../components/LoginPage.vue'
 import SignUpPage from '../components/SignUpPage.vue'
 import DashboardAdmin from '../components/AdministratorPortal/IndexPage.vue'
@@ -94,6 +96,19 @@ const routes = [
         name: 'Profile',
         component: Profile,
         meta: {title: 'Profile - Gaming Portal'}
+    },
+
+    {
+        path: '/forbidden',
+        name: 'Forbidden',
+        component: Forbidden,
+        meta: {title: 'Forbidden Acess - Gaming Portal'}
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: NotFound,
+        meta: {title: 'Not Found - Gaming Portal'}
     },
 
 ]
