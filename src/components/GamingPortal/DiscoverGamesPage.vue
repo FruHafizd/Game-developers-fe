@@ -11,7 +11,7 @@
            <a class="nav-link active bg-dark" href="#">Welcome, Player1</a>
          </li> 
          <li class="nav-item">
-          <router-link to="/login" class="btn bg-white text-primary ms-4">Sign Out</router-link>
+          <router-link to="/logout" class="btn bg-white text-primary ms-4">Sign Out</router-link>
          </li>
        </ul> 
       </div>

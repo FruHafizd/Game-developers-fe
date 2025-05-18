@@ -21,14 +21,15 @@ const routes = [
         path: '/login',
         name: 'Login', 
         component: LoginPage,
-        meta: {title: 'Login - Gaming Portal'}
+        meta: {title: 'Login - Gaming Portal', guestOnly: true}
     },
     {
         path: '/signup',
         name: 'SignUp', 
         component: SignUpPage,
-        meta: {title: 'SignUP - Gaming Portal'}
+        meta: {title: 'SignUP - Gaming Portal',guestOnly: true}
     },
+
     {
         path: '/admin/list-admin',
         name: 'ListAdmin', 
@@ -58,59 +59,59 @@ const routes = [
         path: '/detail-games',
         name: 'DetailGames',
         component: DetailGame,
-        meta: {title: 'Detail Game - Gaming Portal'}
+        meta: {title: 'Detail Game - Gaming Portal',requiresAuth: true}
     },
     {
         path: '/discover-games',
         name: 'DiscoverGames',
         component: DiscoverGame,
-        meta: {title: 'Manage Games - Gaming Portal'}
+        meta: {title: 'Manage Games - Gaming Portal',requiresAuth: true}
     },
     {
         path: '/dashboard',
         name: 'DashboarUser',
         component: DashboarUser,
-        meta: {title: 'Dashboard - Gaming Portal'}
+        meta: {title: 'Dashboard - Gaming Portal', requiresAuth: true}
     },
     {
         path: '/manage-games-form-update',
         name: 'ManageGamesFormUpdate',
         component: ManageGamesFormUpdate,
-        meta: {title: 'Manage Games - Gaming Portal'}
+        meta: {title: 'Manage Games - Gaming Portal',requiresAuth: true}
     },
     {
         path: '/manage-games-form',
         name: 'ManageGamesForm',
         component: ManageGamesForm,
-        meta: {title: 'Manage Games - Gaming Portal'}
+        meta: {title: 'Manage Games - Gaming Portal',requiresAuth: true}
     },
     {
         path: '/manage-games',
         name: 'ManageGames',
         component: ManageGames,
-        meta: {title: 'Manage Games - Gaming Portal'}
+        meta: {title: 'Manage Games - Gaming Portal',requiresAuth: true}
     },
 
     {
         path: '/profile',
         name: 'Profile',
         component: Profile,
-        meta: {title: 'Profile - Gaming Portal'}
+        meta: {title: 'Profile - Gaming Portal',requiresAuth: true}
     },
 
     {
         path: '/forbidden',
         name: 'Forbidden',
         component: Forbidden,
-        meta: {title: 'Forbidden Acess - Gaming Portal'}
+        meta: {title: 'Forbidden Acess - Gaming Portal',guestOnly: true}
     },
     {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: NotFound,
-        meta: {title: 'Not Found - Gaming Portal'}
+        meta: {title: 'Not Found - Gaming Portal',guestOnly: true}
     },
-
+    
 ]
 
 const router = createRouter({
@@ -121,6 +122,33 @@ const router = createRouter({
 router.afterEach((to) => {
     document.title = to.meta.title || 'Gaming Portal'; // Fallback jika tidak ada meta title
 });
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('token') !== null
+
+  // 1. Cek route yang membutuhkan login
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      next('/login') // Redirect ke login
+    } else {
+      next() // Lanjutkan
+    }
+  }
+  
+  // 2. Cek route khusus tamu (contoh: login/signup)
+  else if (to.matched.some(record => record.meta.guestOnly)) {
+    if (isAuthenticated) {
+      next('/dashboard') // Redirect user yang sudah login
+    } else {
+      next()
+    }
+  }
+  
+  // 3. Allow other routes
+  else {
+    next()
+  }
+})
 
 
 export default router

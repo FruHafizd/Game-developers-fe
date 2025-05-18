@@ -74,32 +74,36 @@ export default {
   },
   methods: {
     async handleLogin() {
-      this.error = '' // Reset error
+      this.error = ''
       try {
         const response = await axios.post(
           'http://localhost:8000/api/v1/auth/signin', 
           this.form
         )
         
-        // Simpan token (sesuaikan dengan response API Anda)
-        const token = response.data.token || response.data.accessToken
-        if (token) {
-          localStorage.setItem('token', token)
-          
-          // Redirect ke halaman setelah login
-          this.$router.push('/dashboard') // Ganti dengan route yang sesuai
-        } else {
-          this.error = 'Token tidak diterima dari server'
+        // console.log("Response dari backend:", response.data) // Debug
+        
+        // ✅ Ambil token dari response.data.data.token (sesuai struktur backend)
+        const token = response.data?.data?.token
+        
+        if (!token) {
+          throw new Error("Token tidak ditemukan dalam response")
         }
+        
+        // Simpan token dan user data ke localStorage
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify({
+          username: response.data.data.username
+        }))
+        
+        // Redirect ke dashboard
+        this.$router.push('/dashboard') // Ganti dengan route yang sesuai
+        
       } catch (err) {
-        if (err.response) {
-          // Jika server memberikan response error
-          this.error = err.response.data.message || 'Login gagal'
-        } else {
-          this.error = 'Tidak dapat terhubung ke server'
-        }
+        console.error("Error saat login:", err)
+        this.error = err.response?.data?.message || err.message || "Login gagal"
       }
-    },
+    }
   },
 }
 </script>

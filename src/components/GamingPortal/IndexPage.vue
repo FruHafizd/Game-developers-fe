@@ -8,10 +8,10 @@
          <li><router-link to="/manage-games" class="nav-link px-2 text-white">Manage Games</router-link></li>
          <li><router-link to="/profile" class="nav-link px-2 text-white">User Profile</router-link></li>
          <li class="nav-item">
-           <a class="nav-link active bg-dark" href="#">Welcome, Player1</a>
+           <a class="nav-link active bg-dark" href="#"> Welcome, {{ currentUsername }}</a>
          </li> 
          <li class="nav-item">
-          <router-link to="/login" class="btn bg-white text-primary ms-4">Sign Out</router-link>
+          <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
          </li>
        </ul> 
       </div>
@@ -28,10 +28,31 @@
       <div class="list-form py-5">
          <div class="container">
           <h5 class="alert alert-info">
-            Welcome, Administrator. Don't forget to sign out when you are finished using this page
+             Welcome, {{ currentUsername }} Don't forget to sign out when you are finished using this page
           </h5>
          </div>
       </div>
       
     </main>
 </template>
+
+<script>
+import { logoutUser } from '../../js/utils/auth.js'
+
+export default {
+  computed: {
+    isAuthenticated() {
+      return localStorage.getItem('token') !== null
+    },
+    currentUsername() {
+      const userData = localStorage.getItem('user')
+      return userData ? JSON.parse(userData).username : 'Guest'
+    }
+  },
+  methods: {
+    logout() {
+      logoutUser()
+    }
+  }
+}
+</script>
