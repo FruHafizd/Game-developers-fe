@@ -10,7 +10,7 @@
             <span class="nav-link active bg-dark">Welcome, Administrator</span>
           </li>
           <li class="nav-item">
-            <router-link to="/signin" class="btn bg-white text-primary ms-4">Sign Out</router-link>
+            <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
           </li>
         </ul>
       </div>
@@ -39,12 +39,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr v-for="user in users" :key="user.username">
               <td>
-                <a href="/profile/player1" target="_blank">player1</a>
+                <a href="/profile/player1" target="_blank">{{ user.username }}</a>
               </td>
-              <td>2024-04-05 20:55:40</td>
-              <td>2024-04-05 20:55:40</td>
+              <td>{{ formatDate(user.created_at) }}</td>
+              <td>{{ formatDate(user.last_login_at) }}</td>
               <td>
                 <span class="bg-success text-white p-1 d-inline-block">Active</span>
               </td>
@@ -75,7 +75,7 @@
               </td>
             </tr>
 
-            <tr>
+            <!-- <tr>
               <td>
                 <a href="/profile/player2" target="_blank">player2</a>
               </td>
@@ -89,7 +89,7 @@
                 <router-link to="/admin/update-user/player2" class="btn btn-sm btn-secondary">Update</router-link>
                 <button class="btn btn-sm btn-danger" @click="deleteUser('player2')">Delete</button>
               </td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
       </div>
@@ -98,5 +98,41 @@
 </template>
 
 <script>
+import axios from 'axios';
+import {logoutUser} from '../../js/utils/auth'
+
+export default {
+  name: 'ListUser',
+  data(){
+    return {
+      users: [],
+    }
+  },
+
+  async mounted() {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await axios.get('http://localhost:8000/api/v1/users',{
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        this.users = response.data.content
+      } catch (error) {
+        
+      }
+  },
+  methods: {
+    formatDate(dateTime) {
+      return dateTime ? new Date(dateTime).toLocaleString() : '-'
+    },
+    logout(){
+      logoutUser()
+    }
+  }
+
+
+}
+
 
 </script>
