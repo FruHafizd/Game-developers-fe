@@ -9,7 +9,7 @@
             <span class="nav-link active bg-dark">Welcome, Administrator</span>
           </li>
           <li class="nav-item">
-            <router-link to="/signin" class="btn bg-white text-primary ms-4">Sign Out</router-link>
+            <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
           </li>
         </ul>
       </div>
@@ -33,3 +33,19 @@
     </main>
 
 </template>
+
+<script>
+import { logoutUser } from '../../js/utils/auth.js'
+
+export default {
+  computed: {
+
+  },
+  methods: {
+    logout() {
+      logoutUser()
+    }
+  }
+}
+
+</script>

@@ -92,12 +92,20 @@ export default {
         
         // Simpan token dan user data ke localStorage
         localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify({
+        localStorage.setItem('username', JSON.stringify({
           username: response.data.data.username
         }))
         
         // Redirect ke dashboard
-        this.$router.push('/dashboard') // Ganti dengan route yang sesuai
+        const userData = localStorage.getItem('username')
+        const userObj = userData ? JSON.parse(userData) : null
+        const username = userObj?.username || userData
+        if (username === 'admin1' || username === 'admin2' ) {
+          this.$router.push('/admin/dashboard')
+        }else{
+          this.$router.push('/dashboard')
+        }
+            
         
       } catch (err) {
         console.error("Error saat login:", err)

@@ -34,25 +34,25 @@ const routes = [
         path: '/admin/list-admin',
         name: 'ListAdmin', 
         component: ListAdmin,
-        meta: {title: 'Admin List Admin - Gaming Portal'}
+        meta: {title: 'Admin List Admin - Gaming Portal',  isAdmin: true}
     },
     {
         path: '/admin/dashboard',
         name: 'Dashboard', 
         component: DashboardAdmin,
-        meta: {title: 'Admin Dashboard Admin - Gaming Portal'}
+        meta: {title: 'Admin Dashboard Admin - Gaming Portal',  isAdmin: true}
     },
     {
         path: '/admin/list-user',
         name: 'ListUser', 
         component: ListUser,
-        meta: {title: 'Admin List User - Gaming Portal'}
+        meta: {title: 'Admin List User - Gaming Portal',  isAdmin: true}
     },
     {
         path: '/admin/add-user',
         name: 'ManageUser', 
         component: ManageUser,
-        meta: {title: 'Admin Manage User - Gaming Portal'}
+        meta: {title: 'Admin Manage User - Gaming Portal',  isAdmin: true}
     },
 
     {
@@ -103,13 +103,13 @@ const routes = [
         path: '/forbidden',
         name: 'Forbidden',
         component: Forbidden,
-        meta: {title: 'Forbidden Acess - Gaming Portal',guestOnly: true}
+        meta: {title: 'Forbidden Acess - Gaming Portal'}
     },
     {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: NotFound,
-        meta: {title: 'Not Found - Gaming Portal',guestOnly: true}
+        meta: {title: 'Not Found - Gaming Portal'}
     },
     
 ]
@@ -147,6 +147,36 @@ router.beforeEach((to, from, next) => {
   // 3. Allow other routes
   else {
     next()
+  }
+})
+
+router.beforeEach((to, from, next) => {
+  // Ambil data username dari localStorage
+  const userData = localStorage.getItem('username')
+  
+  try {
+    // Coba parse JSON jika berbentuk object
+    const userObj = userData ? JSON.parse(userData) : null
+    const username = userObj?.username || userData
+    
+    // Cek jika route membutuhkan akses admin
+    if (to.matched.some(record => record.meta.isAdmin)) {
+      if (!username) {
+        next('/login')
+        return
+      }
+      
+      if (username === 'admin1' || username === 'admin2') {
+        next()
+      } else {
+        next('/forbidden')
+      }
+    } else {
+      next()
+    }
+  } catch (e) {
+    console.error('Error parsing user data:', e)
+    next('/login')
   }
 })
 

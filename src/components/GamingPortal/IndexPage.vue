@@ -7,6 +7,7 @@
          <li><router-link to="/discover-games" class="nav-link px-2 text-white">Discover Games</router-link></li>
          <li><router-link to="/manage-games" class="nav-link px-2 text-white">Manage Games</router-link></li>
          <li><router-link to="/profile" class="nav-link px-2 text-white">User Profile</router-link></li>
+         <li><router-link v-if="isAdmin" to="/admin/dashboard" class="nav-link px-2 text-white">Dashboard Admin</router-link></li>
          <li class="nav-item">
            <a class="nav-link active bg-dark" href="#"> Welcome, {{ currentUsername }}</a>
          </li> 
@@ -41,11 +42,17 @@ import { logoutUser } from '../../js/utils/auth.js'
 
 export default {
   computed: {
+    isAdmin(){
+      const userData = localStorage.getItem('username')
+      const userObj = userData ? JSON.parse(userData) : null
+      const username = userObj?.username || userData
+      return ['admin1', 'admin2'].includes(username)
+    },
     isAuthenticated() {
       return localStorage.getItem('token') !== null
     },
     currentUsername() {
-      const userData = localStorage.getItem('user')
+      const userData = localStorage.getItem('username')
       return userData ? JSON.parse(userData).username : 'Guest'
     }
   },
