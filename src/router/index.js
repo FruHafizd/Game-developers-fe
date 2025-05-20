@@ -63,7 +63,7 @@ const routes = [
     },
 
     {
-        path: '/detail-games',
+        path: '/detail-games/:slug',
         name: 'DetailGames',
         component: DetailGame,
         meta: {title: 'Detail Game - Gaming Portal',requiresAuth: true}
