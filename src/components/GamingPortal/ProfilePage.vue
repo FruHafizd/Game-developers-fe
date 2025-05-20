@@ -3,54 +3,49 @@
       <div class="hero py-5 bg-light">
          <div class="container text-center"> 
             <h2 class="mb-1">
-              Dev1
+              {{ user.username }}
             </h2> 
-            <h5 class="mt-2">Last Login 2024-04-09 22:45:41</h5>
+            <h5 class="mt-2">Registered at {{ formatDate(user.registeredTimestamp) }}</h5>
          </div>
       </div>
 
       <div class="py-5">
          <div class="container"> 
-
+            <div v-if="loading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
             <div class="row justify-content-center ">
                <div class="col-lg-5 col-md-6"> 
                         
-              <h5>Highscores per Game</h5>
-              <div class="card-body">
+              <h5 v-if="user.highscores && user.highscores.length > 0">Highscores per Game</h5>
+              <div class="card-body" v-if="user.highscores && user.highscores.length > 0">
                 <ol>
-                  <li><router-link to="/detail-games">Demo Game 1 (3004)</router-link></li>
-                  <li><router-link to="/detail-games">Demo Game 2 (2000)</router-link></li>
-                  <li><router-link to="/detail-games">Demo Game 3 (1044)</router-link></li>
-                  <li><router-link to="/detail-games">Demo Game 4 (1005)</router-link></li>
+                  <li v-for="(highscore, index) in user.highscores" :key="index">
+                    <router-link :to="`/detail-games/${highscore.game.slug}`">
+                      {{ highscore.game.title }} ({{ highscore.score }})
+                    </router-link>
+                  </li>
                 </ol>
               </div>
-              <h5>Authored Games</h5>
-              <router-link to="/detail-games" class="card card-default mb-3">
+              <h5 v-if="user.authoredGames && user.authoredGames.length > 0">Authored Games</h5>
+              <router-link 
+                v-for="(game, index) in user.authoredGames" 
+                :key="index"
+                :to="`/detail-games/${game.slug}`" 
+                class="card card-default mb-3"
+              >
                 <div class="card-body">
                   <div class="row">
                     <div class="col-4">
-                      <img src="../example_game/v1/thumbnail.png" alt="Demo Game 1 Logo" style="width: 100%">
+                      <img src="../example_game/v1/thumbnail.png" :alt="`${game.title} Logo`" style="width: 100%">
                     </div>
                     <div class="col">
-                      <h5 class="mb-1">Demo Game 1 <small class="text-muted">By Dev1</small></h5>
-                      <div>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque, numquam repellendus perspiciatis cupiditate veritatis porro quod eveniet animi perferendis molestias debitis temporibus, asperiores iusto.</div>
+                      <h5 class="mb-1">{{ game.title }}</h5>
+                      <div>{{ game.description }}</div>
                       <hr class="mt-1 mb-1">
-                      <div class="text-muted">#scores submitted : 203</div>
-                    </div>
-                  </div>
-                </div>
-              </router-link>
-              <router-link to="/detail-games" class="card card-default mb-3">
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-4">
-                      <img src="../example_game/v1/thumbnail.png" alt="Demo Game 1 Logo" style="width: 100%">
-                    </div>
-                    <div class="col">
-                      <h5 class="mb-1">Demo Game 1 <small class="text-muted">By Dev1</small></h5>
-                      <div>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque, numquam repellendus perspiciatis cupiditate veritatis porro quod eveniet animi perferendis molestias debitis temporibus, asperiores iusto.</div>
-                      <hr class="mt-1 mb-1">
-                      <div class="text-muted">#scores submitted : 203</div>
+                      <div class="text-muted">#scores submitted : N/A</div>
                     </div>
                   </div>
                 </div>
@@ -66,3 +61,72 @@
       </div>
     </main>
 </template>
+
+<script>
+import axios from 'axios';
+
+export default{
+  name: 'ProfileUser',
+  data(){
+    return{
+      user: {
+        username: '',
+        registeredTimestamp: '',
+        authoredGames: [],
+        highscores: []
+      },
+      loading: false,
+      error: null
+    }
+  },
+  async mounted() {
+    await this.fetchUser();
+  },
+  methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    },
+    async fetchUser(){
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // Ambil username dari localStorage
+        const userData = localStorage.getItem('username');
+        let username;
+        
+        // Cek apakah data berupa JSON string (seperti {"username":"dev1"})
+        try {
+          const userObj = JSON.parse(userData);
+          username = userObj.username;
+        } catch (e) {
+          // Jika bukan JSON, anggap sebagai string langsung
+          username = userData;
+        }
+
+        if (!username) {
+          throw new Error('Username not found in localStorage');
+        }
+
+        const response = await axios.get(`http://localhost:8000/api/v1/users/${username}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        this.user = response.data;
+      } catch (error) {
+        this.error = 'Failed Fetch To Api';
+        console.error('Error fetching user:', error);
+        if (error.response && error.response.status === 401) {
+          this.$router.push('/login');
+        }
+      }finally{
+        this.loading = false;
+      }
+    }
+  }
+}
+</script>
