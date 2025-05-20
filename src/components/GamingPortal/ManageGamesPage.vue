@@ -92,7 +92,12 @@ export default {
     async deleteGame(id) {
       if (confirm('Are you sure you want to delete this game?')) {
         try {
-          await axios.delete(`http://localhost:8000/api/v1/games/${id}`);
+          const token = localStorage.getItem('token');
+          await axios.delete(`http://localhost:8000/api/v1/games/${id}`,{
+            headers:{
+              Authorization: `Bearer ${token}`
+            }
+          });
           this.fetchGames(); // Refresh the list
         } catch (error) {
           alert('Failed to delete game');
