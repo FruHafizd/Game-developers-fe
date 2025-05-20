@@ -70,8 +70,8 @@
                     </li>
                   </ul>
                 </div>
-                <router-link to="/admin/update-user/player1" class="btn btn-sm btn-secondary">Update</router-link>
-                <button class="btn btn-sm btn-danger" @click="deleteUser('player1')">Delete</button>
+                <router-link :to="`/admin/update-user/${user.username}`" class="btn btn-sm btn-secondary">Update</router-link>
+                <button class="btn btn-sm btn-danger" @click="deleteUser(`${user.username}`)">Delete</button>
               </td>
             </tr>
 
@@ -125,6 +125,25 @@ export default {
   methods: {
     formatDate(dateTime) {
       return dateTime ? new Date(dateTime).toLocaleString() : '-'
+    },
+    async deleteUser(username) {
+      if (!confirm(`Yakin ingin menghapus user "${username}"?`)) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:8000/api/v1/users/${username}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Hapus user dari list local tanpa fetch ulang
+      this.users = this.users.filter((user) => user.username !== username);
+        alert('User berhasil dihapus.');
+      } catch (error) {
+        alert('Gagal menghapus user.');
+        console.error(error);
+      }
     },
     logout(){
       logoutUser()

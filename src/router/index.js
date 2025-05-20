@@ -7,6 +7,7 @@ import DashboardAdmin from '../components/AdministratorPortal/IndexPage.vue'
 import ListAdmin from '../components/AdministratorPortal/ListAdminPage.vue'
 import ListUser from '../components/AdministratorPortal/AdminListUserPage.vue'
 import ManageUser from '../components/AdministratorPortal/AdminManageUserPage.vue'
+import UpdateUser from '../components/AdministratorPortal/UpdateUserPage.vue'
 import DetailGame from '../components/GamingPortal/DetailGamesPage.vue'
 import DiscoverGame from '../components/GamingPortal/DiscoverGamesPage.vue'
 import DashboarUser from '../components/GamingPortal/IndexPage.vue'
@@ -52,6 +53,12 @@ const routes = [
         path: '/admin/add-user',
         name: 'ManageUser', 
         component: ManageUser,
+        meta: {title: 'Admin Manage User - Gaming Portal',  isAdmin: true}
+    },
+    {
+        path: '/admin/update-user/:id',
+        name: 'UpdateUser', 
+        component: UpdateUser,
         meta: {title: 'Admin Manage User - Gaming Portal',  isAdmin: true}
     },
 
