@@ -43,7 +43,8 @@
                </thead>
                <tbody>
                  <tr v-for="game in games" :key="game.id">
-                     <td><img src="../../example_game/v1/thumbnail.png" :alt="game.title + ' Logo'" style="width: 100%"></td>
+                     <td><img  :src="game.thumbnail ? `http://localhost:8000/storage/${game.thumbnail}` : '../../example_game/v1/thumbnail.png'" 
+                       :alt="game.title + ' Logo'" style="width: 100%"></td>
                      <td>{{ game.title }}</td>
                      <td>{{ game.description }}</td>
                      <td>

@@ -44,7 +44,6 @@
                       No leaderboard data available
                     </div>
 
-                    <!-- Skor user jika tidak masuk top 10 -->
                     <div v-if="userScoreNotInTop">
                       <hr />
                       <p><strong>Your Score:</strong> {{ userScore.username }} ({{ userScore.score }})</p>
@@ -53,10 +52,21 @@
                 </div>
               </div>
 
-              <!-- Thumbnail dan download abaikan -->
               <div class="col">
-                <img src="../../example_game/v1/thumbnail.png" alt="Demo Game 1 Logo" style="width: 100%">
-                <a href="../example_game/v1/game.zip" class="btn btn-primary w-100 mb-2 mt-2">Download Game</a>
+                <img 
+                  :src="thumbnailUrl" 
+                  :alt="game.title + ' Logo'" 
+                  style="width: 100%"
+                  @error="handleImageError"
+                  class="game-thumbnail"
+                >
+                <a 
+                  :href="downloadUrl" 
+                  class="btn btn-primary w-100 mb-2 mt-2"
+                  :class="{ 'disabled': !downloadAvailable }"
+                >
+                  Download Game
+                </a>
               </div>
             </div>
 
@@ -81,7 +91,10 @@ export default {
       loading: false,
       error: null,
       currentUsername: savedUser.username || '',
-      userScore: null
+      userScore: null,
+      thumbnailUrl: '',
+      downloadUrl: '#',
+      downloadAvailable: false
     };
   },
   computed: {
@@ -108,6 +121,13 @@ export default {
         const slug = this.$route.params.slug;
         const response = await axios.get(`http://localhost:8000/api/v1/games/${slug}`);
         this.game = response.data.content || response.data;
+        
+        // Set thumbnail URL
+        this.setThumbnailUrl();
+        
+        // Set download URL
+        this.setDownloadUrl();
+        
       } catch (error) {
         this.error = 'Failed to load game details. Please try again later.';
         console.error(error);
@@ -115,22 +135,45 @@ export default {
         this.loading = false;
       }
     },
+    
+    setThumbnailUrl() {
+      if (this.game.thumbnail) {
+        // Remove leading slash if exists
+        const cleanPath = this.game.thumbnail;
+        this.thumbnailUrl = `http://localhost:8000/storage/${cleanPath}`;
+      } else {
+        this.thumbnailUrl = '../../example_game/v1/thumbnail.png';
+      }
+    },
+    
+    setDownloadUrl() {
+      if (this.game.slug) {
+        this.downloadUrl = `http://localhost:8000/storage/games/${this.game.slug}/v1/game.zip`;
+        this.downloadAvailable = true;
+      } else {
+        this.downloadUrl = '#';
+        this.downloadAvailable = false;
+      }
+    },
+    
+    handleImageError(event) {
+      console.error('Failed to load thumbnail:', event.target.src);
+      this.thumbnailUrl = '../../example_game/v1/thumbnail.png';
+    },
+
     async fetchScores() {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/games/demo-game-1/scores');
+        const slug = this.$route.params.slug;
+        const response = await axios.get(`http://localhost:8000/api/v1/games/${slug}/scores`);
         this.scores = response.data.scores || [];
-        console.log('Username dari localStorage:', this.currentUsername);
-        console.log('Data skor:', this.scores);
-
-        // Sort descending by score
+        
         this.scores.sort((a, b) => b.score - a.score);
-
-        // Find current user's score
         this.userScore = this.scores.find(score => score.username === this.currentUsername);
       } catch (error) {
         console.error('Failed to load scores:', error);
       }
     },
+    
     formatDate(dateTime) {
       if (!dateTime) return '';
       const date = new Date(dateTime);
