@@ -81,7 +81,7 @@ const routes = [
         meta: {title: 'Dashboard - Gaming Portal', requiresAuth: true}
     },
     {
-        path: '/manage-games-form-update',
+        path: '/manage-games-form-update/:slug',
         name: 'ManageGamesFormUpdate',
         component: ManageGamesFormUpdate,
         meta: {title: 'Manage Games - Gaming Portal',requiresAuth: true}
