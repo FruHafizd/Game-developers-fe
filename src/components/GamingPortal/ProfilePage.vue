@@ -39,7 +39,7 @@
                 <div class="card-body">
                   <div class="row">
                     <div class="col-4">
-                      <img src="../example_game/v1/thumbnail.png" :alt="`${game.title} Logo`" style="width: 100%">
+                      <img src="../../example_game/v1/thumbnail.png" :alt="`${game.title} Logo`" style="width: 100%">
                     </div>
                     <div class="col">
                       <h5 class="mb-1">{{ game.title }}</h5>
