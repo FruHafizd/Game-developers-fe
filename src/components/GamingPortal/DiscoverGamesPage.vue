@@ -98,7 +98,7 @@
                   <div class="row">
                     <div class="col-4">
                       <img 
-                        :src="game.thumbnail || '../example_game/v1/thumbnail.png'" 
+                        src="../../example_game/v1/thumbnail.png" 
                         :alt="game.title + ' Logo'" 
                         style="width: 100%"
                       >
