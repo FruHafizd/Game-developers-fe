@@ -118,16 +118,15 @@ export default {
 
       try {
         const token = localStorage.getItem("token");
+        const url = `http://localhost:8000/api/v1/users/${id}`; 
 
-        const response = await axios.put(
-          `http://localhost:8000/v1/users/${id}`,
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.put(url, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+        });
 
         if (response.data.status === "success") {
           this.success = "Data berhasil diupdate.";
@@ -145,7 +144,7 @@ export default {
           this.error = responseData?.message || "Terjadi kesalahan saat update.";
         }
       }
-    },
+    }
   },
 };
 </script>
