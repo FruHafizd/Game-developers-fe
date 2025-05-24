@@ -148,7 +148,7 @@ export default {
     
     setDownloadUrl() {
       if (this.game.slug) {
-        this.downloadUrl = `http://localhost:8000/storage/games/${this.game.slug}/v1/game.zip`;
+        this.downloadUrl = `http://localhost:8000/storage/${this.game.zip}`;
         this.downloadAvailable = true;
       } else {
         this.downloadUrl = '#';
