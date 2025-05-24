@@ -41,7 +41,7 @@
           <tbody>
             <tr v-for="user in users" :key="user.username">
               <td>
-                <a href="/profile/player1" target="_blank">{{ user.username }}</a>
+                <router-link :to="`/admin/profile/${user.username}`" target="_blank">{{ user.username }}</router-link>
               </td>
               <td>{{ formatDate(user.created_at) }}</td>
               <td>{{ formatDate(user.last_login_at) }}</td>
@@ -70,8 +70,8 @@
                     </li>
                   </ul>
                 </div>
-                <router-link :to="`/admin/update-user/${user.username}`" class="btn btn-sm btn-secondary">Update</router-link>
-                <button class="btn btn-sm btn-danger" @click="deleteUser(`${user.username}`)">Delete</button>
+                <router-link :to="`/admin/update-user/${user.id}`" class="btn btn-sm btn-secondary">Update</router-link>
+                <button class="btn btn-sm btn-danger" @click="deleteUser(user.id, user.username)">Delete</button>
               </td>
             </tr>
 
@@ -99,59 +99,62 @@
 
 <script>
 import axios from 'axios';
-import {logoutUser} from '../../js/utils/auth'
+import { logoutUser } from '../../js/utils/auth';
 
 export default {
   name: 'ListUser',
-  data(){
+  data() {
     return {
       users: [],
-    }
+    };
   },
 
   async mounted() {
-      try {
-        const token = localStorage.getItem('token')
-        const response = await axios.get('http://localhost:8000/api/v1/users',{
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-        this.users = response.data.content
-      } catch (error) {
-        
-      }
+    await this.fetchUsers();
   },
+
   methods: {
-    formatDate(dateTime) {
-      return dateTime ? new Date(dateTime).toLocaleString() : '-'
+    async fetchUsers() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:8000/api/v1/users', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        this.users = response.data.content;
+      } catch (error) {
+        console.error('Gagal mengambil data users:', error);
+      }
     },
-    async deleteUser(username) {
+
+    formatDate(dateTime) {
+      return dateTime ? new Date(dateTime).toLocaleString() : '-';
+    },
+
+    async deleteUser(id, username) {
       if (!confirm(`Yakin ingin menghapus user "${username}"?`)) return;
 
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:8000/api/v1/users/${username}`, {
+        await axios.delete(`http://localhost:8000/api/v1/users/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        // Hapus user dari list local tanpa fetch ulang
-      this.users = this.users.filter((user) => user.username !== username);
+        await this.fetchUsers(); // Refresh daftar user
         alert('User berhasil dihapus.');
       } catch (error) {
         alert('Gagal menghapus user.');
         console.error(error);
       }
     },
-    logout(){
-      logoutUser()
-    }
-  }
 
-
-}
-
-
+    logout() {
+      logoutUser();
+    },
+  },
+};
 </script>
+

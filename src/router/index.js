@@ -15,6 +15,7 @@ import ManageGamesFormUpdate from '../components/GamingPortal/ManageGamesFormUpd
 import ManageGamesForm from '../components/GamingPortal/ManageGamesFormPage.vue'
 import ManageGames from '../components/GamingPortal/ManageGamesPage.vue'
 import Profile from '../components/GamingPortal/ProfilePage.vue'
+import AdminProfile from '../components/AdministratorPortal/ProfilePage.vue'
 
 const routes = [
     {path: '/', redirect: '/login'},
@@ -59,6 +60,12 @@ const routes = [
         path: '/admin/update-user/:id',
         name: 'UpdateUser', 
         component: UpdateUser,
+        meta: {title: 'Admin Manage User - Gaming Portal',  isAdmin: true}
+    },
+    {
+        path: '/admin/profile/:username',
+        name: 'AdminProfile', 
+        component: AdminProfile,
         meta: {title: 'Admin Manage User - Gaming Portal',  isAdmin: true}
     },
 
