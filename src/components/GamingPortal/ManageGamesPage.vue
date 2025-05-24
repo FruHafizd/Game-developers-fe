@@ -65,20 +65,54 @@
           <!-- Pagination Controls -->
           <nav v-if="totalPages > 1" aria-label="Page navigation example">
             <ul class="pagination justify-content-center mt-4">
-              <li :class="['page-item', { disabled: page <= 1 }]" >
-                <button class="page-link" @click="changePage(page - 1)" :disabled="page <= 1">Previous</button>
+              <li :class="['page-item', { disabled: currentPage <= 1 }]" >
+                <button class="page-link" @click="changePage(currentPage - 1)" :disabled="currentPage <= 1">Previous</button>
               </li>
 
-              <li
-                v-for="p in totalPages"
-                :key="p"
-                :class="['page-item', { active: p === page }]"
-              >
-                <button class="page-link" @click="changePage(p)">{{ p }}</button>
-              </li>
+              <!-- Show page numbers with smart truncation -->
+              <template v-if="totalPages <= 7">
+                <li
+                  v-for="p in totalPages"
+                  :key="p"
+                  :class="['page-item', { active: p === currentPage }]"
+                >
+                  <button class="page-link" @click="changePage(p)">{{ p }}</button>
+                </li>
+              </template>
+              
+              <template v-else>
+                <!-- First page -->
+                <li :class="['page-item', { active: 1 === currentPage }]">
+                  <button class="page-link" @click="changePage(1)">1</button>
+                </li>
+                
+                <!-- Dots if needed -->
+                <li v-if="currentPage > 3" class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+                
+                <!-- Current page area -->
+                <li 
+                  v-for="p in visiblePages" 
+                  :key="p"
+                  :class="['page-item', { active: p === currentPage }]"
+                >
+                  <button class="page-link" @click="changePage(p)">{{ p }}</button>
+                </li>
+                
+                <!-- Dots if needed -->
+                <li v-if="currentPage < totalPages - 2" class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+                
+                <!-- Last page -->
+                <li v-if="totalPages > 1" :class="['page-item', { active: totalPages === currentPage }]">
+                  <button class="page-link" @click="changePage(totalPages)">{{ totalPages }}</button>
+                </li>
+              </template>
 
-              <li :class="['page-item', { disabled: page >= totalPages }]">
-                <button class="page-link" @click="changePage(page + 1)" :disabled="page >= totalPages">Next</button>
+              <li :class="['page-item', { disabled: currentPage >= totalPages }]">
+                <button class="page-link" @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages">Next</button>
               </li>
             </ul>
           </nav>
@@ -101,7 +135,7 @@ export default {
       loading: false,
       error: null,
       username: null,
-      page: 1,
+      currentPage: 1, // Ubah dari 'page' ke 'currentPage'
       size: 10,
       totalElements: 0,
     }
@@ -113,7 +147,12 @@ export default {
     } catch {
       this.username = null;
     }
-    await this.fetchGames(this.page);
+    
+    // Initialize from URL query if exists
+    const urlPage = parseInt(this.$route.query.page) || 1;
+    this.currentPage = urlPage;
+    
+    await this.fetchGames(this.currentPage);
   },
   computed: {
     totalPages() {
@@ -122,24 +161,58 @@ export default {
     currentUsername() {
       const userData = localStorage.getItem('username')
       return userData ? JSON.parse(userData).username : 'Guest'
+    },
+    visiblePages() {
+      // For smart pagination display
+      if (this.totalPages <= 7) return [];
+      
+      const pages = [];
+      const start = Math.max(2, this.currentPage - 1);
+      const end = Math.min(this.totalPages - 1, this.currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        if (i !== 1 && i !== this.totalPages) {
+          pages.push(i);
+        }
+      }
+      return pages;
     }
   },
   methods: {
     async fetchGames(page = 1) {
+      // Prevent invalid page numbers
+      if (page < 1) page = 1;
+      
       this.loading = true;
       this.error = null;
+      
       try {
-        // Ingat backend pagination mulai dari page 0
+        // Backend pagination mulai dari page 0
         const response = await axios.get('http://localhost:8000/api/v1/games', {
           params: {
-            page: page - 1, // frontend page 1-based, backend 0-based
+            page: page - 1, // Convert to 0-based for backend
             size: this.size,
           }
         });
-        this.games = response.data.content;
-        this.page = response.data.page + 1; // sesuaikan kembali ke 1-based
-        this.size = response.data.size;
-        this.totalElements = response.data.totalElements;
+        
+        // Update data
+        this.games = response.data.content || [];
+        this.totalElements = response.data.totalElements || 0;
+        
+        // Validasi size dari backend - gunakan yang kita kirim jika backend return size aneh
+        const backendSize = response.data.size;
+        if (backendSize !== this.size) {
+          console.warn(`Backend returned different size: ${backendSize}, keeping frontend size: ${this.size}`);
+        }
+        // Tetap gunakan size yang kita set di frontend
+        
+        // Update URL without triggering navigation
+        if (this.$route.query.page != page) {
+          this.$router.replace({ 
+            query: { ...this.$route.query, page: page.toString() } 
+          }).catch(() => {}); // Ignore navigation duplicated error
+        }
+        
       } catch (error) {
         this.error = 'Failed to load games. Please try again later.';
         console.error('Error fetching games:', error);
@@ -148,9 +221,22 @@ export default {
       }
     },
 
-    changePage(newPage) {
-      if (newPage < 1 || newPage > this.totalPages) return;
-      this.fetchGames(newPage);
+    async changePage(newPage) {
+      // Validate page number
+      if (newPage < 1 || newPage > this.totalPages) {
+        return;
+      }
+      
+      // Prevent unnecessary requests
+      if (newPage === this.currentPage) {
+        return;
+      }
+      
+      // Update current page first
+      this.currentPage = newPage;
+      
+      // Then fetch data
+      await this.fetchGames(newPage);
     },
 
     tryUpdateGame(game) {
@@ -180,7 +266,18 @@ export default {
               Authorization: `Bearer ${token}`
             }
           });
-          this.fetchGames(this.page); // Refresh current page
+          
+          // After deletion, check if current page is still valid
+          const newTotalElements = this.totalElements - 1;
+          const newTotalPages = Math.ceil(newTotalElements / this.size);
+          
+          // If current page becomes invalid, go to last valid page
+          if (this.currentPage > newTotalPages && newTotalPages > 0) {
+            this.currentPage = newTotalPages;
+          }
+          
+          await this.fetchGames(this.currentPage);
+          
         } catch (error) {
           alert('Failed to delete game');
           console.error('Error deleting game:', error);
@@ -190,6 +287,17 @@ export default {
 
     logout() {
       logoutUser();
+    }
+  },
+  
+  // Watch for route changes (if user navigates via URL)
+  watch: {
+    '$route.query.page'(newPage) {
+      const page = parseInt(newPage) || 1;
+      if (page !== this.currentPage) {
+        this.currentPage = page;
+        this.fetchGames(page);
+      }
     }
   }
 }
