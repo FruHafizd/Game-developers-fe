@@ -6,7 +6,7 @@
           <li><router-link to="/admin/list-admin" class="nav-link px-2 text-white">List Admins</router-link></li>
           <li><router-link to="/admin/list-user" class="nav-link px-2 text-white">List Users</router-link></li>
           <li class="nav-item">
-            <span class="nav-link active bg-dark">Welcome, Administrator</span>
+            <span class="nav-link active bg-dark">Welcome, {{ currentUsername }}</span>
           </li>
           <li class="nav-item">
             <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
@@ -25,7 +25,7 @@
       <div class="list-form py-5">
          <div class="container">
           <h5 class="alert alert-info">
-            Welcome, Administrator. Don't forget to sign out when you are finished using this page
+            Welcome, {{ currentUsername }}. Don't forget to sign out when you are finished using this page
           </h5>
          </div>
       </div>
@@ -39,7 +39,10 @@ import { logoutUser } from '../../js/utils/auth.js'
 
 export default {
   computed: {
-
+    currentUsername() {
+      const userData = localStorage.getItem('username')
+      return userData ? JSON.parse(userData).username : 'Guest'
+    }
   },
   methods: {
     logout() {

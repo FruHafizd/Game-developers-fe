@@ -9,7 +9,7 @@
           <li class="nav-item"><router-link to="/manage-games" class="nav-link px-2 text-white">Manage Games</router-link></li>
           <li class="nav-item"><router-link to="/profile" class="nav-link px-2 text-white">User Profile</router-link></li>
           <li class="nav-item">
-            <a class="nav-link active bg-dark" href="#">Welcome, Player1</a>
+            <a class="nav-link active bg-dark" href="#">Welcome, {{ currentUsername }}</a>
           </li> 
           <li class="nav-item">
             <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
@@ -118,6 +118,10 @@ export default {
   computed: {
     totalPages() {
       return Math.ceil(this.totalElements / this.size);
+    },
+    currentUsername() {
+      const userData = localStorage.getItem('username')
+      return userData ? JSON.parse(userData).username : 'Guest'
     }
   },
   methods: {

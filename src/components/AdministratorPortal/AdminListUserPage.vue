@@ -7,7 +7,7 @@
           <li><router-link to="/admin/list-admin" class="nav-link px-2 text-white">List Admins</router-link></li>
           <li><router-link to="/admin/list-user" class="nav-link px-2 text-white">List Users</router-link></li>
           <li class="nav-item">
-            <span class="nav-link active bg-dark">Welcome, Administrator</span>
+            <span class="nav-link active bg-dark">Welcome, {{ currentUsername }}</span>
           </li>
           <li class="nav-item">
             <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
@@ -103,6 +103,12 @@ import { logoutUser } from '../../js/utils/auth';
 
 export default {
   name: 'ListUser',
+  computed: {
+    currentUsername() {
+      const userData = localStorage.getItem('username')
+      return userData ? JSON.parse(userData).username : 'Guest'
+    }
+  },
   data() {
     return {
       users: [],

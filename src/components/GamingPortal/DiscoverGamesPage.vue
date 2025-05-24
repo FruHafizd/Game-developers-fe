@@ -8,10 +8,10 @@
           <li><router-link to="/manage-games" class="nav-link px-2 text-white">Manage Games</router-link></li>
           <li><router-link to="/profile" class="nav-link px-2 text-white">User Profile</router-link></li>
           <li class="nav-item">
-            <a class="nav-link active bg-dark" href="#">Welcome, Player1</a>
+            <a class="nav-link active bg-dark" href="#">Welcome, {{ currentUsername }}</a>
           </li> 
           <li class="nav-item">
-            <router-link to="/logout" class="btn bg-white text-primary ms-4">Sign Out</router-link>
+            <button @click="logout" class="btn bg-white text-primary ms-4">Sign Out</button>
           </li>
         </ul> 
       </div>
@@ -135,8 +135,20 @@
 <script>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import axios from 'axios';
+import { logoutUser } from '../../js/utils/auth.js'
 
 export default {
+  computed:{
+    currentUsername() {
+      const userData = localStorage.getItem('username')
+      return userData ? JSON.parse(userData).username : 'Guest'
+    }
+  },
+  methods: {
+    logout() {
+      logoutUser()
+    }
+  },
   setup() {
     const games = ref([]);
     const loading = ref(false);
